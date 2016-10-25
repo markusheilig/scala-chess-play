@@ -6,6 +6,8 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
+            <option value="$USER_HOME$/.sbt/0.13/staging/9c7cd50093398f7fe545/scala-chess" />
+            <option value="$USER_HOME$/.sbt/0.13/staging/9c7cd50093398f7fe545/scala-chess/project" />
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/project" />
           </set>

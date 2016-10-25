@@ -9,5 +9,6 @@
         <parameter value="utf8" />
       </parameters>
     </profile>
+    <profile name="SBT 2" modules="scala-chess" />
   </component>
 </project>
