@@ -1,43 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module external.linked.project.id="scala-chess" external.linked.project.path="$USER_HOME$/.sbt/0.13/staging/9c7cd50093398f7fe545/scala-chess" external.root.project.path="$MODULE_DIR$/../.." external.system.id="SBT" type="JAVA_MODULE" version="4">
-  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8" inherit-compiler-output="false">
-    <output url="file://$USER_HOME$/.sbt/0.13/staging/9c7cd50093398f7fe545/scala-chess/target/scala-2.11/classes" />
-    <output-test url="file://$USER_HOME$/.sbt/0.13/staging/9c7cd50093398f7fe545/scala-chess/target/scala-2.11/test-classes" />
-    <exclude-output />
-    <content url="file://$USER_HOME$/.sbt/0.13/staging/9c7cd50093398f7fe545/scala-chess">
-      <sourceFolder url="file://$USER_HOME$/.sbt/0.13/staging/9c7cd50093398f7fe545/scala-chess/src/main/java" isTestSource="false" />
-      <sourceFolder url="file://$USER_HOME$/.sbt/0.13/staging/9c7cd50093398f7fe545/scala-chess/src/main/scala" isTestSource="false" />
-      <sourceFolder url="file://$USER_HOME$/.sbt/0.13/staging/9c7cd50093398f7fe545/scala-chess/target/scala-2.11/src_managed/main" isTestSource="false" />
-      <sourceFolder url="file://$USER_HOME$/.sbt/0.13/staging/9c7cd50093398f7fe545/scala-chess/src/test/java" isTestSource="true" />
-      <sourceFolder url="file://$USER_HOME$/.sbt/0.13/staging/9c7cd50093398f7fe545/scala-chess/src/test/scala" isTestSource="true" />
-      <sourceFolder url="file://$USER_HOME$/.sbt/0.13/staging/9c7cd50093398f7fe545/scala-chess/target/scala-2.11/src_managed/test" isTestSource="true" />
-      <sourceFolder url="file://$USER_HOME$/.sbt/0.13/staging/9c7cd50093398f7fe545/scala-chess/src/main/resources" type="java-resource" />
-      <sourceFolder url="file://$USER_HOME$/.sbt/0.13/staging/9c7cd50093398f7fe545/scala-chess/target/scala-2.11/resource_managed/main" type="java-resource" />
-      <sourceFolder url="file://$USER_HOME$/.sbt/0.13/staging/9c7cd50093398f7fe545/scala-chess/src/test/resources" type="java-test-resource" />
-      <sourceFolder url="file://$USER_HOME$/.sbt/0.13/staging/9c7cd50093398f7fe545/scala-chess/target/scala-2.11/resource_managed/test" type="java-test-resource" />
-      <excludeFolder url="file://$USER_HOME$/.sbt/0.13/staging/9c7cd50093398f7fe545/scala-chess/target" />
-    </content>
-    <orderEntry type="inheritedJdk" />
+<module version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="false">
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="SBT: org.scala-lang:scala-library:2.11.8:jar" level="project" />
-    <orderEntry type="module-library">
-      <library name="SBT: unmanaged-sources-and-docs">
-        <CLASSES />
-        <JAVADOC />
-        <SOURCES>
-          <root url="jar://$USER_HOME$/.ivy2/cache/io.netty/netty-transport-native-epoll/srcs/netty-transport-native-epoll-4.0.41.Final-sources.jar!/" />
-        </SOURCES>
-      </library>
-    </orderEntry>
-    <orderEntry type="library" scope="TEST" name="SBT: org.specs2:specs2-matcher_2.11:3.8.5:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.specs2:specs2-core_2.11:3.8.5:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.specs2:specs2-common_2.11:3.8.5:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.specs2:specs2-codata_2.11:3.8.5:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.scalaz:scalaz-effect_2.11:7.2.6:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.scalaz:scalaz-core_2.11:7.2.6:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.scalaz:scalaz-concurrent_2.11:7.2.6:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.scala-lang.modules:scala-xml_2.11:1.0.5:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.scala-lang.modules:scala-parser-combinators_2.11:1.0.4:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.scala-lang:scala-reflect:2.11.8:jar" level="project" />
   </component>
 </module>

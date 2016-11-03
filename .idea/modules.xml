@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/scala-chess.iml" filepath="$PROJECT_DIR$/.idea/modules/scala-chess.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/scala-chess-build.iml" filepath="$PROJECT_DIR$/.idea/modules/scala-chess-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/scala-chess-api.iml" filepath="$PROJECT_DIR$/.idea/modules/scala-chess-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/scala-chess-api-build.iml" filepath="$PROJECT_DIR$/.idea/modules/scala-chess-api-build.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/scala_chess_play.iml" filepath="$PROJECT_DIR$/.idea/modules/scala_chess_play.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/scala_chess_play-build.iml" filepath="$PROJECT_DIR$/.idea/modules/scala_chess_play-build.iml" />
     </modules>

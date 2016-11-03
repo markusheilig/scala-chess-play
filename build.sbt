@@ -10,12 +10,7 @@ scalaVersion := "2.11.7"
 
 libraryDependencies ++= Seq( jdbc , cache , ws , specs2 % Test )
 
-libraryDependencies += "com.typesafe.akka" %% "akka-remote" % "2.4-SNAPSHOT"
-
-
-
 unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/test" )  
 
 resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
 
-resolvers += "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/"
