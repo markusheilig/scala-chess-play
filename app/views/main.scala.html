@@ -6,19 +6,20 @@
         <title>Web-Socket-Test</title>
 
         <script type="text/javascript">
-      var ws = new WebSocket("ws://localhost:9000/socket");
+          var ws = new WebSocket("ws://localhost:9000/socket");
 
-      ws.onmessage = function(event)
-      {
-          var outputField = document.getElementById("outputField");
-          outputField.innerHTML = event.data;
-      };
+          ws.onmessage = function(event)
+          {
+              var outputField = document.getElementById("outputField");
+              outputField.innerHTML = event.data;
+          };
 
-      function onButtonClick() {
-          var inputField = document.getElementById("inputField");
-          ws.send(inputField.value);
-          inputField.value = "";
-      }
+          function onButtonClick() {
+              var inputField = document.getElementById("inputField");
+              ws.send(inputField.value);
+              inputField.value = "";
+          }
+
     </script>
 
     </head>
