@@ -6,13 +6,13 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 object MyWebSocketActor {
-  def props(out: ActorRef, localController: ActorRef) = {
-    localController ! AppendSocket(out)
-    Props(new MyWebSocketActor(out, localController))
-  }
+  def props(out: ActorRef, localController: ActorRef) = Props(new MyWebSocketActor(out, localController))
 }
 
 class MyWebSocketActor(val out: ActorRef, val localController: ActorRef) extends Actor {
+
+  // add socket to socket list
+  localController ! AppendObserver(self)
 
   implicit val JsonTuple2: Reads[(Int, Int)] = (
       (JsPath \ "x").read[Int] and
@@ -29,20 +29,20 @@ class MyWebSocketActor(val out: ActorRef, val localController: ActorRef) extends
           case "castle" => handle[Castle](json)
           case other => out ! Json.obj("error" -> s"unknown message type '$other'")
         }
-        case error: JsError => out ! Json.obj("error" -> "property 'type' is missing")
+        case error: JsError => out ! Json.obj("error" -> "json property 'type' is missing")
       }
-    case _ => out ! Json.obj("error" -> "invaliad json format")
   }
 
   def handle[T](jsValue: JsValue)(implicit rds: Reads[T]): Unit = {
     jsValue.validate[T] match {
       case success: JsSuccess[T] => localController ! success.get
-      case error: JsError => println(error.toString)
+      case error: JsError => out ! Json.toJson(JsError.toJson(error))
     }
   }
 
-  override def postStop(): Unit = {
-    localController ! RemoveSocket(self)
+  override def postStop() = {
+    // remove websocket from socket list when socket gets closed
+    localController ! RemoveObserver(self)
   }
 
 }
