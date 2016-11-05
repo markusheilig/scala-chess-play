@@ -1,44 +1,48 @@
 package controllers
 
 import akka.actor.{Actor, ActorRef, Props}
-import chess.api.MoveAndChangeChoice.MoveAndChangeChoice
 import chess.api._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 object MyWebSocketActor {
-  def props(out: ActorRef) = Props(new MyWebSocketActor(out))
+  def props(out: ActorRef, localController: ActorRef) = {
+    localController ! AppendSocket(out)
+    Props(new MyWebSocketActor(out, localController))
+  }
 }
 
-class MyWebSocketActor(out: ActorRef) extends Actor {
+class MyWebSocketActor(val out: ActorRef, val localController: ActorRef) extends Actor {
 
   implicit val JsonTuple2: Reads[(Int, Int)] = (
-    (JsPath \ "x").read[Int] and
+      (JsPath \ "x").read[Int] and
       (JsPath \ "y").read[Int]
     )(Tuple2[Int, Int] _)
   implicit val readsMove = Json.reads[Move]
   implicit val readsCastle = Json.reads[Castle]
 
-  def receive = {
-    case json: JsValue => {
+  override def receive = {
+    case json: JsValue =>
       (json \ "type").validate[String] match {
         case success: JsSuccess[String] => success.get.toLowerCase match {
           case "move" => handle[Move](json)
           case "castle" => handle[Castle](json)
-          case _ => out ! Json.obj("error" -> "unknown message type")
+          case other => out ! Json.obj("error" -> s"unknown message type '$other'")
         }
-        case error: JsError => out ! Json.obj("error" -> "invalid message format")
+        case error: JsError => out ! Json.obj("error" -> "property 'type' is missing")
       }
-    }
+    case _ => out ! Json.obj("error" -> "invaliad json format")
   }
 
   def handle[T](jsValue: JsValue)(implicit rds: Reads[T]): Unit = {
     jsValue.validate[T] match {
-      case success: JsSuccess[T] => {
-        println(s"valid message format for ${success.get.getClass.getSimpleName}")
-      }
+      case success: JsSuccess[T] => localController ! success.get
       case error: JsError => println(error.toString)
     }
+  }
+
+  override def postStop(): Unit = {
+    localController ! RemoveSocket(self)
   }
 
 }
