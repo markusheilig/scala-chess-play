@@ -8,8 +8,19 @@
         <script type="text/javascript">
           var ws = new WebSocket("ws://localhost:9000/socket");
 
-          ws.onmessage = function(event)
-          {
+          ws.onopen = function() {
+              console.log("web socket open");
+          };
+
+          ws.onerror = function(error) {
+              console.log("web socket error", error);
+          };
+
+          ws.onclose = function() {
+              console.log("web socket close");
+          };
+
+          ws.onmessage = function(event) {
               var outputField = document.getElementById("outputField");
               outputField.innerHTML = event.data;
           };
