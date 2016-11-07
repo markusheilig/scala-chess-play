@@ -23,7 +23,10 @@ class MyWebSocketActor(val out: ActorRef, val chessController: ActorRef) extends
   implicit val readsCastle = Json.reads[Castle]
 
   implicit val writesPiece = new Writes[Piece] {
-    override def writes(o: Piece) = JsString(o.getClass.getSimpleName)
+    override def writes(o: Piece) = Json.obj(
+      "type" -> o.getClass.getSimpleName,
+      "color" -> o.color
+    )
   }
   implicit val jsonTuple2Writes = new Writes[(Int, Int)] {
     def writes(tuple: (Int, Int)) = Json.obj(
