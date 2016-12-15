@@ -2,7 +2,7 @@ name := "scala_chess_play"
 
 version := "1.0"
 
-lazy val scalaChess = RootProject(uri("git://github.com/markusheilig/scala-chess-api.git#master"))
+lazy val scalaChess = RootProject(uri("git://github.com/scala-chess/scala-chess-api.git#master"))
 
 lazy val `scala_chess_play` = (project in file(".")).enablePlugins(PlayScala).dependsOn(scalaChess)
 

@@ -1,56 +1,86 @@
 package controllers
 
 import akka.actor.{Actor, ActorRef, Props}
-import chess.api._
+import chess.api.{Piece, _}
 import chess.api.actors.{RegisterObserver, UnregisterObserver}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
+
 object MyWebSocketActor {
   def props(out: ActorRef, chessController: ActorRef) = Props(new MyWebSocketActor(out, chessController))
+
+
 }
 
 class MyWebSocketActor(val out: ActorRef, val chessController: ActorRef) extends Actor {
 
-  // add socket to socket list
-  chessController ! RegisterObserver(self)
+  chessController ! RegisterObserver
 
-  implicit val jsonTuple2Reads: Reads[(Int, Int)] = (
+  implicit val jsonPositionReads: Reads[Position] = (
     (JsPath \ "x").read[Int] and
-    (JsPath \ "y").read[Int]
-  )(Tuple2[Int, Int] _)
+      (JsPath \ "y").read[Int]
+    )(Tuple2[Int, Int] _)
+  implicit val jsonPositionWrites = new Writes[Position] {
+    def writes(position: Position) = Json.obj(
+      "x" -> position._1,
+      "y" -> position._2
+    )
+  }
+
+  implicit val readsRemove = Json.reads[Remove]
+  implicit val readsPut = Json.reads[Put]
   implicit val readsMove = Json.reads[Move]
   implicit val readsCastle = Json.reads[Castle]
 
-  implicit val writesPiece = new Writes[Piece] {
-    override def writes(o: Piece) = Json.obj(
-      "type" -> o.getClass.getSimpleName,
-      "color" -> o.color
+
+  implicit val pieceWrites = new Writes[Piece] {
+    override def writes(p: Piece): JsValue = Json.obj(
+      "id" -> p.id,
+      "color" -> p.color.toString,
+      "type" -> p.getClass.getSimpleName
     )
   }
-  implicit val jsonTuple2Writes = new Writes[(Int, Int)] {
-    def writes(tuple: (Int, Int)) = Json.obj(
-      "x" -> tuple._1,
-      "y" -> tuple._2
-    )
-  }
-  implicit val posPieceWrites = new Writes[((Int, Int), Piece)] {
-    def writes(posPiece: ((Int, Int), Piece)) = Json.obj(
+
+  implicit val formatPositionPiece = Json.format[(Position, Piece)]
+  //implicit val formatSeqPositionPiece = Json.format[Seq[(Position, Piece)]]
+
+  implicit val chessBoardWrites = Json.writes[ChessBoard]
+
+  implicit val posPieceWrites = new Writes[(Position, Piece)] {
+    def writes(posPiece: (Position, Piece)) = Json.obj(
       "pos" -> Json.toJson(posPiece._1),
       "piece" -> Json.toJson(posPiece._2)
     )
   }
-  implicit val posPieceIterableWrites = new Writes[Iterable[((Int, Int), Piece)]] {
-    override def writes(o: Iterable[((Int, Int), Piece)]) = Json.toJson(o)
+  implicit val posPieceIterableWrites = new Writes[Iterable[(Position, Piece)]] {
+    override def writes(o: Iterable[(Position, Piece)]) = Json.toJson(o)
   }
-  implicit val chessBoardWrites = Json.writes[ChessBoard]
+
+  implicit val improvedNameReads =
+    (JsPath \ "undo").read[Undo]
+
+  case class ReadsMatch[T](reads: Reads[T]) {
+    def unapply(js: JsValue) = reads.reads(js).asOpt
+  }
+
+  val move = ReadsMatch[Move](Json.reads[Move])
+  val castle = ReadsMatch[Castle](Json.reads[Castle])
+  val undo = ReadsMatch[Undo](Json.reads[Undo])
 
   override def receive = {
-    case json: JsValue =>
+    case json: JsValue => json match {
+        case move(m@Move(_,_,_,_)) => chessController ! m
+        case castle(c@Castle(_,_,_)) => chessController ! c
+        case undo(u@Undo()) => chessController ! u
+      }
+  }
+
+      /*
       (json \ "type").validate[String] match {
         case success: JsSuccess[String] => success.get.toLowerCase match {
-          case "move" => handle[Move](json)
-          case "castle" => handle[Castle](json)
+          //case "move" => handle[Move](json)
+          //case "castle" => handle[Castle](json)
           case other => out ! Json.obj("error" -> s"unknown message type '$other'")
         }
         case error: JsError => out ! Json.obj("error" -> "json property 'type' is missing")
@@ -69,8 +99,22 @@ class MyWebSocketActor(val out: ActorRef, val chessController: ActorRef) extends
   }
 
   override def postStop() = {
-    // remove websocket from socket list when socket gets closed
-    chessController ! UnregisterObserver(self)
+    // unregister observer when socket gets closed
+    chessController ! UnregisterObserver
   }
 
+  trait MyAction
+  case class MyMove(x: Int) extends MyAction
+  case class AndreasMove(q: String) extends MyAction
+
+  val myMoveReadsMatch = ReadsMatch[MyMove](Json.reads[MyMove])
+  val andreasMoveReadsMatch = ReadsMatch[AndreasMove](Json.reads[AndreasMove])
+
+  def dohandle(x: JsValue) = x match {
+    case myMoveReadsMatch(a@MyMove(8)) => 199999
+    case myMoveReadsMatch(a@MyMove(_)) => a.x
+    case andreasMoveReadsMatch(b@AndreasMove(_)) => b.q
+    case _ => -1
+  }
+  */
 }

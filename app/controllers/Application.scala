@@ -5,7 +5,7 @@ import javax.inject.Inject
 
 import akka.actor._
 import akka.stream.Materializer
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsValue, Json, Reads}
 import play.api.libs.streams.ActorFlow
 import play.api.mvc._
 
@@ -25,5 +25,4 @@ class Application @Inject() (implicit system: ActorSystem, materializer: Materia
   def index = Action {
     Ok(views.html.main())
   }
-
 }
