@@ -25,11 +25,6 @@ class MyWebSocketActor(val wsOut: ActorRef, val chessController: ActorRef) exten
     )
   }
 
-  implicit val readsRemove = Json.format[Remove]
-  implicit val readsPut = Json.format[Put]
-  implicit val readsMove = Json.format[Move]
-  implicit val readsCastle = Json.format[Castle]
-
   implicit val pieceWrites = new Writes[Piece] {
     override def writes(p: Piece): JsValue = Json.obj(
       "id" -> p.id,
@@ -53,10 +48,17 @@ class MyWebSocketActor(val wsOut: ActorRef, val chessController: ActorRef) exten
     def unapply(js: JsValue) = reads.reads(js).asOpt
   }
 
-  val castle = ReadsMatch[Castle](Json.reads[Castle])
-  val move = ReadsMatch[Move](Json.reads[Move])
-  val put = ReadsMatch[Put](Json.reads[Put])
-  val remove = ReadsMatch[Remove](Json.reads[Remove])
+  implicit val readsCastle = Json.format[Castle]
+  val castle = ReadsMatch[Castle]((JsPath \ "castle").read[Castle])
+
+  implicit val readsMove = Json.format[Move]
+  val move = ReadsMatch[Move]((JsPath \ "move").read[Move])
+
+  implicit val readsPut = Json.format[Put]
+  val put = ReadsMatch[Put]((JsPath \ "put").read[Put])
+
+  implicit val readsRemove = Json.format[Remove]
+  val remove = ReadsMatch[Remove]((JsPath \ "remove").read[Remove])
 
   override def receive = {
     // messages from chess controller
