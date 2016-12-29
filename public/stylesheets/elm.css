@@ -1,0 +1,7 @@
+.selection:hover {
+    background: rgba(68, 138, 255,0.7)
+}
+
+html, head, body {
+    height: 100%;
+}
