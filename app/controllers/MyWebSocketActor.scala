@@ -60,6 +60,7 @@ class MyWebSocketActor(val wsOut: ActorRef, val chessController: ActorRef) exten
       "piece" -> Json.toJson(posPiece._2)
     )
   }
+
   implicit val posPieceIterableWrites = new Writes[Seq[(Position, Piece)]] {
     override def writes(o: Seq[(Position, Piece)]) = Json.toJson(o)
   }
@@ -71,6 +72,8 @@ class MyWebSocketActor(val wsOut: ActorRef, val chessController: ActorRef) exten
   implicit val chessBoardWrites = Json.writes[ChessBoard]
 
   implicit val queryValidActions = Json.format[QueryValidActions]
+
+  implicit val updateWrites = Json.writes[Update]
 
   val queryMatcher = ReadsMatch[QueryValidActions](queryValidActions)
 
@@ -84,7 +87,7 @@ class MyWebSocketActor(val wsOut: ActorRef, val chessController: ActorRef) exten
 
   override def receive = {
     // messages from chess controller
-    case update: Update => wsOut ! Json.toJson(update.chessBoard)
+    case update: Update => wsOut ! Json.toJson(update)
 
     // messages from websocket
     case json: JsValue => json match {
