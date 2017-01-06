@@ -9174,23 +9174,29 @@ var _elm_lang$websocket$WebSocket$onSelfMsg = F3(
 		}
 	});
 _elm_lang$core$Native_Platform.effectManagers['WebSocket'] = {pkg: 'elm-lang/websocket', init: _elm_lang$websocket$WebSocket$init, onEffects: _elm_lang$websocket$WebSocket$onEffects, onSelfMsg: _elm_lang$websocket$WebSocket$onSelfMsg, tag: 'fx', cmdMap: _elm_lang$websocket$WebSocket$cmdMap, subMap: _elm_lang$websocket$WebSocket$subMap};
-var _user$project$Model$Position = F2(
-	function (a, b) {
-		return {x: a, y: b};
-	});
-var _user$project$Model$Piece = F3(
-	function (a, b, c) {
-		return {id: a, pos: b, img: c};
-	});
-var _user$project$Model$Selection = F3(
-	function (a, b, c) {
-		return {action: a, img: b, description: c};
-	});
-var _user$project$Model$Castle = {ctor: 'Castle'};
-var _user$project$Model$Move = {ctor: 'Move'};
+var _user$project$Position$encode = function (pos) {
+	return _elm_lang$core$Json_Encode$object(
+		{
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: 'x',
+				_1: _elm_lang$core$Json_Encode$int(pos.x)
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: 'y',
+					_1: _elm_lang$core$Json_Encode$int(pos.y)
+				},
+				_1: {ctor: '[]'}
+			}
+		});
+};
 var _user$project$Position$toIndex = F2(
 	function (boardSize, pos) {
-		return (pos.x * boardSize.x) + pos.y;
+		return pos.x + (pos.y * boardSize.x);
 	});
 var _user$project$Position$fromIndex = F2(
 	function (boardSize, index) {
@@ -9207,12 +9213,64 @@ var _user$project$Position$decoder = A3(
 	_user$project$Position$Position,
 	A2(_elm_lang$core$Json_Decode$field, 'x', _elm_lang$core$Json_Decode$int),
 	A2(_elm_lang$core$Json_Decode$field, 'y', _elm_lang$core$Json_Decode$int));
+var _user$project$Action$Action = F3(
+	function (a, b, c) {
+		return {name: a, target: b, choice: c};
+	});
+var _user$project$Action$decoder = A4(
+	_elm_lang$core$Json_Decode$map3,
+	_user$project$Action$Action,
+	A2(_elm_lang$core$Json_Decode$field, 'name', _elm_lang$core$Json_Decode$string),
+	A2(_elm_lang$core$Json_Decode$field, 'target', _user$project$Position$decoder),
+	A2(
+		_elm_lang$core$Json_Decode$field,
+		'choice',
+		_elm_lang$core$Json_Decode$nullable(_elm_lang$core$Json_Decode$string)));
+var _user$project$Model$Model = F4(
+	function (a, b, c, d) {
+		return {selection: a, pieces: b, boardSize: c, winner: d};
+	});
+var _user$project$Model$Piece = F3(
+	function (a, b, c) {
+		return {id: a, pos: b, img: c};
+	});
+var _user$project$Model$Choice = F3(
+	function (a, b, c) {
+		return {action: a, img: b, description: c};
+	});
+var _user$project$Model$Selected = F2(
+	function (a, b) {
+		return {ctor: 'Selected', _0: a, _1: b};
+	});
+var _user$project$Model$SelectedNeedChoice = F3(
+	function (a, b, c) {
+		return {ctor: 'SelectedNeedChoice', _0: a, _1: b, _2: c};
+	});
+var _user$project$Model$Available = F2(
+	function (a, b) {
+		return {ctor: 'Available', _0: a, _1: b};
+	});
+var _user$project$Model$AvailablePending = function (a) {
+	return {ctor: 'AvailablePending', _0: a};
+};
+var _user$project$Model$None = {ctor: 'None'};
+var _user$project$Message$ActionDone = {ctor: 'ActionDone'};
+var _user$project$Message$WebSocketReceive = function (a) {
+	return {ctor: 'WebSocketReceive', _0: a};
+};
+var _user$project$Message$SelectChoice = function (a) {
+	return {ctor: 'SelectChoice', _0: a};
+};
+var _user$project$Message$SelectField = function (a) {
+	return {ctor: 'SelectField', _0: a};
+};
 var _user$project$BoardView$selectionImage = function (selectionItem) {
 	return A2(
 		_elm_lang$html$Html$img,
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$src(selectionItem),
+			_0: _elm_lang$html$Html_Attributes$src(
+				_elm_lang$core$Tuple$second(selectionItem)),
 			_1: {
 				ctor: '::',
 				_0: _elm_lang$html$Html_Attributes$style(
@@ -9236,28 +9294,37 @@ var _user$project$BoardView$selectionImage = function (selectionItem) {
 				_1: {
 					ctor: '::',
 					_0: _elm_lang$html$Html_Attributes$class('selection'),
-					_1: {ctor: '[]'}
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Events$onClick(
+							_user$project$Message$SelectChoice(
+								_elm_lang$core$Tuple$first(selectionItem))),
+						_1: {ctor: '[]'}
+					}
 				}
 			}
 		},
 		{ctor: '[]'});
 };
-var _user$project$BoardView$mapActionToSelection = function (action) {
-	var _p0 = action;
-	if (_p0.ctor === 'Move') {
-		return 'move.png';
-	} else {
-		return 'castle.png';
-	}
+var _user$project$BoardView$mapChoiceToImgURL = function (choice) {
+	return {
+		ctor: '_Tuple2',
+		_0: choice,
+		_1: A2(
+			_elm_lang$core$Basics_ops['++'],
+			'assets/pieces/',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				'Black_',
+				A2(_elm_lang$core$Basics_ops['++'], choice, '.png')))
+	};
 };
 var _user$project$BoardView$selectionDiv = F2(
 	function (items, side) {
-		var show = _elm_lang$core$Native_Utils.cmp(
-			_elm_lang$core$List$length(items),
-			1) > 0;
+		var show = true;
 		var width = function () {
-			var _p1 = show;
-			if (_p1 === true) {
+			var _p0 = show;
+			if (_p0 === true) {
 				return A2(
 					_elm_lang$core$Basics_ops['++'],
 					_elm_lang$core$Basics$toString(
@@ -9352,7 +9419,7 @@ var _user$project$BoardView$selectionDiv = F2(
 			A2(
 				_elm_lang$core$List$map,
 				_user$project$BoardView$selectionImage,
-				A2(_elm_lang$core$List$map, _user$project$BoardView$mapActionToSelection, items)));
+				A2(_elm_lang$core$List$map, _user$project$BoardView$mapChoiceToImgURL, items)));
 	});
 var _user$project$BoardView$pieceDiv = function (piece) {
 	var asPercentString = function (x) {
@@ -9565,7 +9632,7 @@ var _user$project$BoardView$getImg = F2(
 	});
 var _user$project$BoardView$BoardModel = F7(
 	function (a, b, c, d, e, f, g) {
-		return {boardSize: a, selected: b, selectedTarget: c, targets: d, pieces: e, selection: f, onClick: g};
+		return {boardSize: a, selected: b, selectedTarget: c, targets: d, pieces: e, choices: f, onClick: g};
 	});
 var _user$project$BoardView$Right = {ctor: 'Right'};
 var _user$project$BoardView$draw = function (model) {
@@ -9647,7 +9714,7 @@ var _user$project$BoardView$draw = function (model) {
 							_0: {
 								ctor: '_Tuple2',
 								_0: 'selection',
-								_1: A2(_user$project$BoardView$selectionDiv, model.selection, _user$project$BoardView$Right)
+								_1: A2(_user$project$BoardView$selectionDiv, model.choices, _user$project$BoardView$Right)
 							},
 							_1: {ctor: '[]'}
 						} : {ctor: '[]'}));
@@ -9695,6 +9762,14 @@ var _user$project$ComPiece$encoder = function (piece) {
 			}
 		});
 };
+var _user$project$ComPiece$toModelPiece = F2(
+	function (comPiece, pos) {
+		return A3(
+			_user$project$Model$Piece,
+			comPiece.id,
+			pos,
+			_user$project$ComPiece$img(comPiece));
+	});
 var _user$project$ComPiece$ComPiece = F3(
 	function (a, b, c) {
 		return {id: a, name: b, color: c};
@@ -9705,38 +9780,164 @@ var _user$project$ComPiece$decoder = A4(
 	A2(_elm_lang$core$Json_Decode$field, 'id', _elm_lang$core$Json_Decode$int),
 	A2(_elm_lang$core$Json_Decode$field, 'name', _elm_lang$core$Json_Decode$string),
 	A2(_elm_lang$core$Json_Decode$field, 'color', _elm_lang$core$Json_Decode$string));
-var _user$project$Communication$modelPiece = F2(
-	function (piece, pos) {
-		return A3(
-			_user$project$Model$Piece,
-			piece.id,
-			pos,
-			_user$project$ComPiece$img(piece));
-	});
 var _user$project$Communication$posPieceDecoder = A3(
 	_elm_lang$core$Json_Decode$map2,
-	_user$project$Communication$modelPiece,
+	_user$project$ComPiece$toModelPiece,
 	A2(_elm_lang$core$Json_Decode$field, 'piece', _user$project$ComPiece$decoder),
 	A2(_elm_lang$core$Json_Decode$field, 'pos', _user$project$Position$decoder));
-var _user$project$Communication$handleMessage = function (msg) {
-	var posPieces = function () {
-		var _p0 = A2(
-			_elm_lang$core$Json_Decode$decodeString,
+var _user$project$Communication$execActionCmd = F2(
+	function (pos, index) {
+		return A2(
+			_elm_lang$websocket$WebSocket$send,
+			'ws://localhost:9000/socket',
 			A2(
-				_elm_lang$core$Json_Decode$field,
-				'pieces',
-				_elm_lang$core$Json_Decode$list(_user$project$Communication$posPieceDecoder)),
-			msg);
-		if (_p0.ctor === 'Ok') {
-			return A2(_elm_lang$core$Debug$log, 'pieces', _p0._0);
-		} else {
-			var x = A2(_elm_lang$core$Debug$log, 'Error', _p0._0);
-			return {ctor: '[]'};
-		}
-	}();
-	return posPieces;
+				_elm_lang$core$Json_Encode$encode,
+				0,
+				_elm_lang$core$Json_Encode$object(
+					{
+						ctor: '::',
+						_0: {
+							ctor: '_Tuple2',
+							_0: 'position',
+							_1: _user$project$Position$encode(pos)
+						},
+						_1: {
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: 'index',
+								_1: _elm_lang$core$Json_Encode$int(index)
+							},
+							_1: {ctor: '[]'}
+						}
+					})));
+	});
+var _user$project$Communication$queryActionsCmd = function (pos) {
+	return A2(
+		_elm_lang$websocket$WebSocket$send,
+		'ws://localhost:9000/socket',
+		A2(
+			_elm_lang$core$Json_Encode$encode,
+			0,
+			_elm_lang$core$Json_Encode$object(
+				{
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: 'origin',
+						_1: _user$project$Position$encode(pos)
+					},
+					_1: {ctor: '[]'}
+				})));
 };
-var _user$project$Main$flexCenter = _elm_lang$html$Html_Attributes$style(
+var _user$project$Communication$Invalid = function (a) {
+	return {ctor: 'Invalid', _0: a};
+};
+var _user$project$Communication$ValidActions = function (a) {
+	return {ctor: 'ValidActions', _0: a};
+};
+var _user$project$Communication$validActionsDecoder = A2(
+	_elm_lang$core$Json_Decode$map,
+	_user$project$Communication$ValidActions,
+	_elm_lang$core$Json_Decode$list(_user$project$Action$decoder));
+var _user$project$Communication$Update = F2(
+	function (a, b) {
+		return {ctor: 'Update', _0: a, _1: b};
+	});
+var _user$project$Communication$updateDecoder = A3(
+	_elm_lang$core$Json_Decode$map2,
+	_user$project$Communication$Update,
+	A2(
+		_elm_lang$core$Json_Decode$at,
+		{
+			ctor: '::',
+			_0: 'chessBoard',
+			_1: {
+				ctor: '::',
+				_0: 'pieces',
+				_1: {ctor: '[]'}
+			}
+		},
+		_elm_lang$core$Json_Decode$list(_user$project$Communication$posPieceDecoder)),
+	_elm_lang$core$Json_Decode$maybe(
+		A2(_elm_lang$core$Json_Decode$field, 'winner', _elm_lang$core$Json_Decode$string)));
+var _user$project$Communication$inMessageDecoder = _elm_lang$core$Json_Decode$oneOf(
+	{
+		ctor: '::',
+		_0: _user$project$Communication$validActionsDecoder,
+		_1: {
+			ctor: '::',
+			_0: _user$project$Communication$updateDecoder,
+			_1: {ctor: '[]'}
+		}
+	});
+var _user$project$Communication$handleMessage = function (msg) {
+	var _p0 = A2(
+		_elm_lang$core$Json_Decode$decodeString,
+		_user$project$Communication$inMessageDecoder,
+		A2(_elm_lang$core$Debug$log, 'JSON:', msg));
+	if (_p0.ctor === 'Ok') {
+		return _p0._0;
+	} else {
+		return _user$project$Communication$Invalid(
+			A2(_elm_lang$core$Debug$log, 'Error', _p0._0));
+	}
+};
+var _user$project$View$winnerDiv = function (maybeWinner) {
+	var _p0 = maybeWinner;
+	if (_p0.ctor === 'Just') {
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'z-index', _1: '4'},
+						_1: {
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 'font-size', _1: '5em'},
+							_1: {
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: 'background', _1: 'rgba(255, 64, 129, 0.9)'},
+								_1: {
+									ctor: '::',
+									_0: {ctor: '_Tuple2', _0: 'padding', _1: '20px'},
+									_1: {ctor: '[]'}
+								}
+							}
+						}
+					}),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(
+					A2(_elm_lang$core$Basics_ops['++'], _p0._0, ' has won!')),
+				_1: {ctor: '[]'}
+			});
+	} else {
+		return _elm_lang$html$Html$text('');
+	}
+};
+var _user$project$View$stylesheet = A3(
+	_elm_lang$html$Html$node,
+	'link',
+	{
+		ctor: '::',
+		_0: _elm_lang$html$Html_Attributes$rel('stylesheet'),
+		_1: {
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$type_('text/css'),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$href('assets/stylesheets/elm.css'),
+				_1: {ctor: '[]'}
+			}
+		}
+	},
+	{ctor: '[]'});
+var _user$project$View$flexCenter = _elm_lang$html$Html_Attributes$style(
 	{
 		ctor: '::',
 		_0: {ctor: '_Tuple2', _0: 'display', _1: 'flex'},
@@ -9750,78 +9951,60 @@ var _user$project$Main$flexCenter = _elm_lang$html$Html_Attributes$style(
 			}
 		}
 	});
-var _user$project$Main$updatePosition = F2(
-	function (pos, piece) {
-		return _elm_lang$core$Native_Utils.update(
-			piece,
-			{pos: pos});
-	});
-var _user$project$Main$ts = function (i) {
-	return {
-		ctor: '::',
-		_0: i + 1,
-		_1: {
-			ctor: '::',
-			_0: i - 1,
-			_1: {
-				ctor: '::',
-				_0: i + 7,
-				_1: {
-					ctor: '::',
-					_0: i + 8,
-					_1: {
-						ctor: '::',
-						_0: i + 9,
-						_1: {
-							ctor: '::',
-							_0: i - 7,
-							_1: {
-								ctor: '::',
-								_0: i - 8,
-								_1: {
-									ctor: '::',
-									_0: i - 9,
-									_1: {ctor: '[]'}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	};
-};
-var _user$project$Main$Model = F3(
-	function (a, b, c) {
-		return {selection: a, pieces: b, boardSize: c};
-	});
-var _user$project$Main$ActionDone = {ctor: 'ActionDone'};
-var _user$project$Main$WebSocketReceive = function (a) {
-	return {ctor: 'WebSocketReceive', _0: a};
-};
-var _user$project$Main$subscriptions = function (model) {
-	return A2(_elm_lang$websocket$WebSocket$listen, 'ws://localhost:9000/socket', _user$project$Main$WebSocketReceive);
-};
-var _user$project$Main$SelectField = function (a) {
-	return {ctor: 'SelectField', _0: a};
-};
-var _user$project$Main$view = function (model) {
+var _user$project$View$view = function (model) {
 	var selection = function () {
-		var _p0 = model.selection;
-		switch (_p0.ctor) {
+		var _p1 = model.selection;
+		switch (_p1.ctor) {
 			case 'None':
 				return {
 					selected: -1,
 					targets: {ctor: '[]'},
-					selectedTarget: -1
+					selectedTarget: -1,
+					choices: {ctor: '[]'}
+				};
+			case 'AvailablePending':
+				return {
+					selected: _p1._0,
+					targets: {ctor: '[]'},
+					selectedTarget: -1,
+					choices: {ctor: '[]'}
 				};
 			case 'Available':
-				return {selected: _p0._0, targets: _p0._1, selectedTarget: -1};
+				var targetIndices = A2(
+					_elm_lang$core$List$map,
+					_user$project$Position$toIndex(model.boardSize),
+					A2(
+						_elm_lang$core$List$map,
+						function (_) {
+							return _.target;
+						},
+						_p1._1));
+				return {
+					selected: _p1._0,
+					targets: targetIndices,
+					selectedTarget: -1,
+					choices: {ctor: '[]'}
+				};
+			case 'SelectedNeedChoice':
+				var _p2 = _p1._1;
+				var choices = A2(
+					_elm_lang$core$List$filterMap,
+					function (_) {
+						return _.choice;
+					},
+					A2(_elm_lang$core$List$map, _elm_lang$core$Tuple$second, _p1._2));
+				return {
+					selected: _p2,
+					targets: {ctor: '[]'},
+					selectedTarget: _p2,
+					choices: choices
+				};
 			default:
 				return {
-					selected: _p0._0,
+					selected: _p1._0,
 					targets: {ctor: '[]'},
-					selectedTarget: _p0._1
+					selectedTarget: _p1._1,
+					choices: {ctor: '[]'}
 				};
 		}
 	}();
@@ -9829,7 +10012,7 @@ var _user$project$Main$view = function (model) {
 		_elm_lang$html$Html$div,
 		{
 			ctor: '::',
-			_0: _user$project$Main$flexCenter,
+			_0: _user$project$View$flexCenter,
 			_1: {
 				ctor: '::',
 				_0: _elm_lang$html$Html_Attributes$style(
@@ -9852,151 +10035,249 @@ var _user$project$Main$view = function (model) {
 		{
 			ctor: '::',
 			_0: _user$project$BoardView$draw(
-				{
-					boardSize: model.boardSize,
-					selected: selection.selected,
-					selectedTarget: selection.selectedTarget,
-					targets: selection.targets,
-					pieces: model.pieces,
-					onClick: _user$project$Main$SelectField,
-					selection: {
-						ctor: '::',
-						_0: _user$project$Model$Move,
-						_1: {
-							ctor: '::',
-							_0: _user$project$Model$Castle,
-							_1: {ctor: '[]'}
-						}
-					}
-				}),
+				{boardSize: model.boardSize, selected: selection.selected, selectedTarget: selection.selectedTarget, targets: selection.targets, pieces: model.pieces, onClick: _user$project$Message$SelectField, choices: selection.choices}),
 			_1: {
 				ctor: '::',
-				_0: A3(
-					_elm_lang$html$Html$node,
-					'link',
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$rel('stylesheet'),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$type_('text/css'),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$href('assets/stylesheets/elm.css'),
-								_1: {ctor: '[]'}
-							}
-						}
-					},
-					{ctor: '[]'}),
-				_1: {ctor: '[]'}
+				_0: _user$project$View$stylesheet,
+				_1: {
+					ctor: '::',
+					_0: _user$project$View$winnerDiv(model.winner),
+					_1: {ctor: '[]'}
+				}
 			}
 		});
 };
-var _user$project$Main$Selected = F2(
-	function (a, b) {
-		return {ctor: 'Selected', _0: a, _1: b};
+var _user$project$Main$subscriptions = function (model) {
+	return A2(_elm_lang$websocket$WebSocket$listen, 'ws://localhost:9000/socket', _user$project$Message$WebSocketReceive);
+};
+var _user$project$Main$fieldSelected = F2(
+	function (index, model) {
+		var _p0 = function () {
+			var _p1 = model.selection;
+			switch (_p1.ctor) {
+				case 'None':
+					return {
+						ctor: '_Tuple2',
+						_0: _user$project$Model$AvailablePending(index),
+						_1: {
+							ctor: '::',
+							_0: _user$project$Communication$queryActionsCmd(
+								A2(_user$project$Position$fromIndex, model.boardSize, index)),
+							_1: {ctor: '[]'}
+						}
+					};
+				case 'Available':
+					var _p2 = _p1._0;
+					var indexedActions = A2(
+						_elm_lang$core$List$filter,
+						function (t) {
+							return _elm_lang$core$Native_Utils.eq(
+								A2(
+									_user$project$Position$toIndex,
+									model.boardSize,
+									_elm_lang$core$Tuple$second(t).target),
+								index);
+						},
+						A2(
+							_elm_lang$core$List$indexedMap,
+							F2(
+								function (v0, v1) {
+									return {ctor: '_Tuple2', _0: v0, _1: v1};
+								}),
+							_p1._1));
+					return (_elm_lang$core$Native_Utils.cmp(
+						_elm_lang$core$List$length(indexedActions),
+						1) > 0) ? {
+						ctor: '_Tuple2',
+						_0: A3(_user$project$Model$SelectedNeedChoice, _p2, index, indexedActions),
+						_1: {ctor: '[]'}
+					} : A2(
+						_elm_lang$core$Maybe$withDefault,
+						{
+							ctor: '_Tuple2',
+							_0: _user$project$Model$None,
+							_1: {ctor: '[]'}
+						},
+						A2(
+							_elm_lang$core$Maybe$map,
+							function (i) {
+								return {
+									ctor: '_Tuple2',
+									_0: A2(_user$project$Model$Selected, _p2, index),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_user$project$Communication$execActionCmd,
+											A2(_user$project$Position$fromIndex, model.boardSize, _p2),
+											i),
+										_1: {ctor: '[]'}
+									}
+								};
+							},
+							_elm_lang$core$List$head(
+								A2(_elm_lang$core$List$map, _elm_lang$core$Tuple$first, indexedActions))));
+				default:
+					return {
+						ctor: '_Tuple2',
+						_0: model.selection,
+						_1: {ctor: '[]'}
+					};
+			}
+		}();
+		var selection = _p0._0;
+		var cmds = _p0._1;
+		return A2(
+			_elm_lang$core$Platform_Cmd_ops['!'],
+			_elm_lang$core$Native_Utils.update(
+				model,
+				{selection: selection}),
+			cmds);
 	});
-var _user$project$Main$Available = F2(
-	function (a, b) {
-		return {ctor: 'Available', _0: a, _1: b};
+var _user$project$Main$webSocketReceived = F2(
+	function (data, model) {
+		var _p3 = _user$project$Communication$handleMessage(data);
+		switch (_p3.ctor) {
+			case 'Update':
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{pieces: _p3._0, winner: _p3._1}),
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$core$Task$perform,
+							function (_p4) {
+								return _user$project$Message$ActionDone;
+							},
+							_elm_lang$core$Process$sleep(1 * _elm_lang$core$Time$second)),
+						_1: {ctor: '[]'}
+					});
+			case 'ValidActions':
+				var _p5 = model.selection;
+				if (_p5.ctor === 'AvailablePending') {
+					return A2(
+						_elm_lang$core$Platform_Cmd_ops['!'],
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{
+								selection: A2(_user$project$Model$Available, _p5._0, _p3._0)
+							}),
+						{ctor: '[]'});
+				} else {
+					return A2(
+						_elm_lang$core$Platform_Cmd_ops['!'],
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{selection: _user$project$Model$None}),
+						{ctor: '[]'});
+				}
+			default:
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					model,
+					{ctor: '[]'});
+		}
 	});
-var _user$project$Main$None = {ctor: 'None'};
-var _user$project$Main$init = A2(
-	_elm_lang$core$Platform_Cmd_ops['!'],
-	A3(
-		_user$project$Main$Model,
-		_user$project$Main$None,
-		{ctor: '[]'},
-		{x: 8, y: 8}),
-	{ctor: '[]'});
+var _user$project$Main$choiceSelected = F2(
+	function (choice, model) {
+		var _p6 = model.selection;
+		if (_p6.ctor === 'SelectedNeedChoice') {
+			var _p9 = _p6._0;
+			return A2(
+				_elm_lang$core$Maybe$withDefault,
+				A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{selection: _user$project$Model$None}),
+					{ctor: '[]'}),
+				A2(
+					_elm_lang$core$Maybe$map,
+					function (i) {
+						return A2(
+							_elm_lang$core$Platform_Cmd_ops['!'],
+							_elm_lang$core$Native_Utils.update(
+								model,
+								{
+									selection: A2(_user$project$Model$Selected, _p9, _p6._1)
+								}),
+							{
+								ctor: '::',
+								_0: A2(
+									_user$project$Communication$execActionCmd,
+									A2(_user$project$Position$fromIndex, model.boardSize, _p9),
+									i),
+								_1: {ctor: '[]'}
+							});
+					},
+					_elm_lang$core$List$head(
+						A2(
+							_elm_lang$core$List$map,
+							_elm_lang$core$Tuple$first,
+							A2(
+								_elm_lang$core$List$filter,
+								function (_p7) {
+									var _p8 = _p7;
+									return _elm_lang$core$Native_Utils.eq(
+										A2(_elm_lang$core$Maybe$withDefault, '', _p8._1.choice),
+										choice);
+								},
+								_p6._2)))));
+		} else {
+			return A2(
+				_elm_lang$core$Platform_Cmd_ops['!'],
+				_elm_lang$core$Native_Utils.update(
+					model,
+					{selection: _user$project$Model$None}),
+				{ctor: '[]'});
+		}
+	});
+var _user$project$Main$whenNotWon = F2(
+	function (f, model) {
+		var _p10 = model.winner;
+		if (_p10.ctor === 'Just') {
+			return A2(
+				_elm_lang$core$Platform_Cmd_ops['!'],
+				model,
+				{ctor: '[]'});
+		} else {
+			return f(model);
+		}
+	});
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var _p1 = msg;
-		switch (_p1.ctor) {
+		var _p11 = msg;
+		switch (_p11.ctor) {
 			case 'SelectField':
-				var _p4 = _p1._0;
-				var _p2 = function () {
-					var _p3 = model.selection;
-					switch (_p3.ctor) {
-						case 'None':
-							return {
-								ctor: '_Tuple3',
-								_0: A2(
-									_user$project$Main$Available,
-									_p4,
-									_user$project$Main$ts(_p4)),
-								_1: model.pieces,
-								_2: {ctor: '[]'}
-							};
-						case 'Available':
-							return A2(
-								_elm_lang$core$List$any,
-								function (t) {
-									return _elm_lang$core$Native_Utils.eq(t, _p4);
-								},
-								_p3._1) ? {
-								ctor: '_Tuple3',
-								_0: A2(_user$project$Main$Selected, _p3._0, _p4),
-								_1: A2(
-									_elm_lang$core$List$map,
-									function (p) {
-										return _elm_lang$core$Native_Utils.eq(p.id, 1) ? A2(
-											_user$project$Main$updatePosition,
-											A2(_user$project$Position$fromIndex, model.boardSize, _p4),
-											p) : p;
-									},
-									model.pieces),
-								_2: {
-									ctor: '::',
-									_0: A2(
-										_elm_lang$core$Task$perform,
-										_elm_lang$core$Basics$always(_user$project$Main$ActionDone),
-										_elm_lang$core$Process$sleep(1.1 * _elm_lang$core$Time$second)),
-									_1: {ctor: '[]'}
-								}
-							} : {
-								ctor: '_Tuple3',
-								_0: _user$project$Main$None,
-								_1: model.pieces,
-								_2: {ctor: '[]'}
-							};
-						default:
-							return {
-								ctor: '_Tuple3',
-								_0: _user$project$Main$None,
-								_1: model.pieces,
-								_2: {ctor: '[]'}
-							};
-					}
-				}();
-				var selection = _p2._0;
-				var pieces = _p2._1;
-				var cmds = _p2._2;
 				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{pieces: pieces, selection: selection}),
-					cmds);
+					_user$project$Main$whenNotWon,
+					_user$project$Main$fieldSelected(_p11._0),
+					model);
+			case 'SelectChoice':
+				return A2(_user$project$Main$choiceSelected, _p11._0, model);
 			case 'WebSocketReceive':
-				var pieces = _user$project$Communication$handleMessage(_p1._0);
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{pieces: pieces}),
-					{ctor: '[]'});
+				return A2(_user$project$Main$webSocketReceived, _p11._0, model);
 			default:
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{selection: _user$project$Main$None}),
+						{selection: _user$project$Model$None}),
 					{ctor: '[]'});
 		}
 	});
+var _user$project$Main$init = A2(
+	_elm_lang$core$Platform_Cmd_ops['!'],
+	{
+		selection: _user$project$Model$None,
+		pieces: {ctor: '[]'},
+		boardSize: {x: 8, y: 8},
+		winner: _elm_lang$core$Maybe$Nothing
+	},
+	{ctor: '[]'});
 var _user$project$Main$main = _elm_lang$html$Html$program(
-	{init: _user$project$Main$init, view: _user$project$Main$view, update: _user$project$Main$update, subscriptions: _user$project$Main$subscriptions})();
+	{init: _user$project$Main$init, view: _user$project$View$view, update: _user$project$Main$update, subscriptions: _user$project$Main$subscriptions})();
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
 if (typeof _user$project$Main$main !== 'undefined') {
