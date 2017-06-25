@@ -9840,12 +9840,12 @@ var _user$project$Communication$validActionsDecoder = A2(
 	_elm_lang$core$Json_Decode$map,
 	_user$project$Communication$ValidActions,
 	_elm_lang$core$Json_Decode$list(_user$project$Action$decoder));
-var _user$project$Communication$Update = F2(
-	function (a, b) {
-		return {ctor: 'Update', _0: a, _1: b};
+var _user$project$Communication$Update = F4(
+	function (a, b, c, d) {
+		return {ctor: 'Update', _0: a, _1: b, _2: c, _3: d};
 	});
-var _user$project$Communication$updateDecoder = A3(
-	_elm_lang$core$Json_Decode$map2,
+var _user$project$Communication$updateDecoder = A5(
+	_elm_lang$core$Json_Decode$map4,
 	_user$project$Communication$Update,
 	A2(
 		_elm_lang$core$Json_Decode$at,
@@ -9860,7 +9860,31 @@ var _user$project$Communication$updateDecoder = A3(
 		},
 		_elm_lang$core$Json_Decode$list(_user$project$Communication$posPieceDecoder)),
 	_elm_lang$core$Json_Decode$maybe(
-		A2(_elm_lang$core$Json_Decode$field, 'winner', _elm_lang$core$Json_Decode$string)));
+		A2(_elm_lang$core$Json_Decode$field, 'winner', _elm_lang$core$Json_Decode$string)),
+	A2(
+		_elm_lang$core$Json_Decode$at,
+		{
+			ctor: '::',
+			_0: 'chessBoard',
+			_1: {
+				ctor: '::',
+				_0: 'dimX',
+				_1: {ctor: '[]'}
+			}
+		},
+		_elm_lang$core$Json_Decode$int),
+	A2(
+		_elm_lang$core$Json_Decode$at,
+		{
+			ctor: '::',
+			_0: 'chessBoard',
+			_1: {
+				ctor: '::',
+				_0: 'dimY',
+				_1: {ctor: '[]'}
+			}
+		},
+		_elm_lang$core$Json_Decode$int));
 var _user$project$Communication$inMessageDecoder = _elm_lang$core$Json_Decode$oneOf(
 	{
 		ctor: '::',
@@ -10142,7 +10166,11 @@ var _user$project$Main$webSocketReceived = F2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{pieces: _p3._0, winner: _p3._1}),
+						{
+							pieces: _p3._0,
+							winner: _p3._1,
+							boardSize: {x: _p3._2, y: _p3._3}
+						}),
 					{
 						ctor: '::',
 						_0: A2(
